@@ -3,7 +3,6 @@ import logging
 import requests
 from telegram import Update
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
-
 # Setup logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
@@ -18,6 +17,19 @@ API_URL = "https://api.openai.com/v1/engines/davinci/completions"
 # Function to handle /start command
 def start(update: Update, context: CallbackContext) -> None:
     update.message.reply_text("hallo saya adalah chat gptnya chell.")
+
+def echo(update: Update, context: CallbackContext) -> None:
+    text = update.message.text
+    if text.startswith('/start'):
+        update.message.reply_text('Hello!')
+    elif text.startswith('/help'):
+        update.message.reply_text('How can I help you?')
+    else:
+        update.message.reply_text('I do not understand that command.')
+
+# Contoh handler dengan menggunakan Filters
+message_handler = MessageHandler(Filters.text & ~Filters.command, echo)
+dispatcher.add_handler(message_handler)
 
 # Function to handle messages
 def echo(update: Update, context: CallbackContext) -> None:
