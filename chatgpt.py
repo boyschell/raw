@@ -40,7 +40,7 @@ def get_chatgpt_response(message):
 
 def main():
     # Create the Updater and pass it your bot's token.
-    updater = Updater(TELEGRAM_TOKEN)
+    #updater = Updater(TELEGRAM_TOKEN)
 
     # Get the dispatcher to register handlers
     dispatcher = updater.dispatcher
