@@ -9,10 +9,10 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
                     level=logging.INFO)
 
 # Telegram bot token from BotFather
-TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')  # Replace with your Telegram bot token
+TELEGRAM_TOKEN = os.getenv('6742667446:AAFhjpdI7m6Pk1MZz0fS6qP9LFb0idcTQkE')  # Replace with your Telegram bot token
 
 # OpenAI API Key
-OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')  # Replace with your OpenAI API key
+OPENAI_API_KEY = os.getenv('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')  # Replace with your OpenAI API key
 API_URL = "https://api.openai.com/v1/engines/davinci/completions"
 
 # Function to handle /start command
