@@ -46,8 +46,8 @@ def main():
     #dispatcher = updater.dispatcher
 
     # Add handlers
-    dispatcher.add_handler(CommandHandler("start", start))
-    dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, echo))
+    dispatcher.add_handler('start', startCommand(update, context))
+    dispatcher.add_handler('alert', startCommand(update, context) & (Filters.text & ~Filters.command, echo))
 
     # Start the Bot
     updater.start_polling()
