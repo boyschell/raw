@@ -43,7 +43,7 @@ def main():
     #updater = Updater(TELEGRAM_TOKEN)
 
     # Get the dispatcher to register handlers
-    dispatcher = updater.dispatcher
+    #dispatcher = updater.dispatcher
 
     # Add handlers
     dispatcher.add_handler(CommandHandler("start", start))
