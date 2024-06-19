@@ -15,8 +15,8 @@ TELEGRAM_TOKEN = os.getenv('6742667446:AAFhjpdI7m6Pk1MZz0fS6qP9LFb0idcTQkE')  # 
 OPENAI_API_KEY = os.getenv('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')  # Replace with your OpenAI API key
 API_URL = "https://api.openai.com/v1/engines/davinci/completions"
 
-update_queue = Queue()
-updater = Updater(bot=bot, update_queue=update_queue)
+#update_queue = Queue()
+#updater = Updater(bot=bot, update_queue=update_queue)
 
 dispatcher = Dispatcher(updater.bot, update_queue)
 dispatcher.use_context = True
