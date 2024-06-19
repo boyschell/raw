@@ -2,65 +2,58 @@ import os
 import logging
 import requests
 from telegram import Update
-from telegram.ext import Filters
-from telegram.ext import Updater, CommandHandler, MessageHandler, CallbackContext
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
+
 # Setup logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
 
 # Telegram bot token from BotFather
-TELEGRAM_TOKEN = os.getenv('6742667446:AAFhjpdI7m6Pk1MZz0fS6qP9LFb0idcTQkE')  # Replace with your Telegram bot token
+TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')  # Replace with your Telegram bot token
 
 # OpenAI API Key
-OPENAI_API_KEY = os.getenv('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')  # Replace with your OpenAI API key
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')  # Replace with your OpenAI API key
 API_URL = "https://api.openai.com/v1/engines/davinci/completions"
 
-#update_queue = Queue()
-#updater = Updater(bot=bot, update_queue=update_queue)
+# Function to handle /start command
+def start(update: Update, context: CallbackContext) -> None:
+    update.message.reply_text("Hi! I'm your ChatGPT bot. Send me a message and I'll respond.")
 
-dispatcher = Dispatcher(updater.bot, update_queue)
-dispatcher.use_context = True
+# Function to handle messages
+def echo(update: Update, context: CallbackContext) -> None:
+    message = update.message.text
+    response = get_chatgpt_response(message)
+    update.message.reply_text(response)
 
+# Function to get response from ChatGPT
+def get_chatgpt_response(message):
+    headers = {
+        "Authorization": f"Bearer {OPENAI_API_KEY}",
+        "Content-Type": "application/json"
+    }
+    data = {
+        "prompt": message,
+        "max_tokens": 100
+    }
+    response = requests.post(API_URL, headers=headers, json=data)
+    return response.json()['choices'][0]['text'].strip()
 
-# Define a function to handle incoming Telegram messages
-def handle_message(update: Update, context: CallbackContext):
-  message_text = update.message.text
-  chat_id = update.message.chat_id
+def main():
+    # Create the Updater and pass it your bot's token.
+    updater = Updater(TELEGRAM_TOKEN)
 
-  # Check if the message is code-related and needs assistance 
-  if message_text.startswith("/codefix"):
-    # Extract the code from the message 
-    code_to_fix = message_text[8:] # Adjust the index as needed
+    # Get the dispatcher to register handlers
+    dispatcher = updater.dispatcher
 
-    # Send the code to ChatGPT for assistance
-    response = openai.Completion.create(
-      engine="davinci", # Use the appropriate ChatGPT engine  
-      prompt=f"Fix the following code:\n```{code_to_fix}```",
-      max_tokens=50 # Adjust the response length as needed
-    )
+    # Add handlers
+    dispatcher.add_handler(CommandHandler("start", start))
+    dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, echo))
 
-    # Extract the response from ChatGPT
-    fixed_code = response.choices[0].text
-    
-    # Send the fixed code back to the user
-    bot.send_message(chat_id=chat_id, text=f"Here's the fixed code:\n```{fixed_code}```")
+    # Start the Bot
+    updater.start_polling()
 
-  else:
-    # Handle other non-code related messages here
-    bot.send_message(chat_id=chat_id, text="I can only assist with code fixes. Use /codefix to get help.")
+    # Run the bot until you press Ctrl-C
+    updater.idle()
 
-# Define a command handler  
-def start(update: Update, context: CallbackContext):
-  update.message.reply_text("Welcome to the CodeFix Bot! Send /codefix followed by your code for assistance.")
-
-# Set up the message handler
-message_handler = MessageHandler(Filters.text & ~Filters.command, handle_message)
-dispatcher.add_handler(message_handler)
-
-# Set up the command handler
-dispatcher.add_handler(CommandHandler("start", start))
-
-if __name__ == "__main__":
-  # Start the Telegram bot updater and the Flask app
-  updater.start_polling()  
-  app.run(debug=True)
+if __name__ == '__main__':
+    main()
