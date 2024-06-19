@@ -29,7 +29,7 @@ def echo(update: Update, context: CallbackContext) -> None:
         update.message.reply_text('I do not understand that command.')
 
 # Contoh handler dengan menggunakan Filters
-message_handler = MessageHandler(Filters.text & ~Filters.command, echo)
+message_handler = MessageHandler(filters.text & ~filters.command, echo)
 dispatcher.add_handler(message_handler)
 
 # Function to handle messages
