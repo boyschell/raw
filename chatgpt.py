@@ -15,58 +15,52 @@ TELEGRAM_TOKEN = os.getenv('6742667446:AAFhjpdI7m6Pk1MZz0fS6qP9LFb0idcTQkE')  # 
 OPENAI_API_KEY = os.getenv('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')  # Replace with your OpenAI API key
 API_URL = "https://api.openai.com/v1/engines/davinci/completions"
 
-# Function to handle /start command
-def start(update: Update, context: CallbackContext) -> None:
-    update.message.reply_text("hallo saya adalah chat gptnya chell.")
+update_queue = Queue()
+updater = Updater(bot=bot, update_queue=update_queue)
 
-def echo(update: Update, context: CallbackContext) -> None:
-    text = update.message.text
-    if text.startswith('/start'):
-        update.message.reply_text('Hello!')
-    elif text.startswith('/help'):
-        update.message.reply_text('How can I help you?')
-    else:
-        update.message.reply_text('I do not understand that command.')
+dispatcher = Dispatcher(updater.bot, update_queue)
+dispatcher.use_context = True
 
-# Contoh handler dengan menggunakan Filters
-message_handler = MessageHandler(Filters.text & ~Filters.command, echo)
+
+# Define a function to handle incoming Telegram messages
+def handle_message(update: Update, context: CallbackContext):
+  message_text = update.message.text
+  chat_id = update.message.chat_id
+
+  # Check if the message is code-related and needs assistance 
+  if message_text.startswith("/codefix"):
+    # Extract the code from the message 
+    code_to_fix = message_text[8:] # Adjust the index as needed
+
+    # Send the code to ChatGPT for assistance
+    response = openai.Completion.create(
+      engine="davinci", # Use the appropriate ChatGPT engine  
+      prompt=f"Fix the following code:\n```{code_to_fix}```",
+      max_tokens=50 # Adjust the response length as needed
+    )
+
+    # Extract the response from ChatGPT
+    fixed_code = response.choices[0].text
+    
+    # Send the fixed code back to the user
+    bot.send_message(chat_id=chat_id, text=f"Here's the fixed code:\n```{fixed_code}```")
+
+  else:
+    # Handle other non-code related messages here
+    bot.send_message(chat_id=chat_id, text="I can only assist with code fixes. Use /codefix to get help.")
+
+# Define a command handler  
+def start(update: Update, context: CallbackContext):
+  update.message.reply_text("Welcome to the CodeFix Bot! Send /codefix followed by your code for assistance.")
+
+# Set up the message handler
+message_handler = MessageHandler(Filters.text & ~Filters.command, handle_message)
 dispatcher.add_handler(message_handler)
 
-# Function to handle messages
-def echo(update: Update, context: CallbackContext) -> None:
-    message = update.message.text
-    response = get_chatgpt_response(message)
-    update.message.reply_text(response)
+# Set up the command handler
+dispatcher.add_handler(CommandHandler("start", start))
 
-# Function to get response from ChatGPT
-def get_chatgpt_response(message):
-    headers = {
-        "Authorization": f"Bearer {OPENAI_API_KEY}",
-        "Content-Type": "application/json"
-    }
-    data = {
-        "prompt": message,
-        "max_tokens": 100
-    }
-    response = requests.post(API_URL, headers=headers, json=data)
-    return response.json()['choices'][0]['text'].strip()
-
-def main():
-    # Create the Updater and pass it your bot's token.
-    updater = Updater(TELEGRAM_TOKEN)
-
-    # Get the dispatcher to register handlers
-    dispatcher = updater.dispatcher
-
-    # Add handlers
-    dispatcher.add_handler(CommandHandler("start", start))
-    dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, echo))
-
-    # Start the Bot
-    updater.start_polling()
-
-    # Run the bot until you press Ctrl-C
-    updater.idle()
-
-if __name__ == '__main__':
-    main()
+if __name__ == "__main__":
+  # Start the Telegram bot updater and the Flask app
+  updater.start_polling()  
+  app.run(debug=True)
